@@ -1,73 +1,81 @@
-from math import sqrt
+from math import floor, sqrt
 from numpy import array
 from random import randint
 
 from agent import Agent, AgentType
 
-class Society():
+class Society:
     # -- GAME PARAMS -- #
     # space size 
-    SPACE_SIZE = 100 
+    space_size = 50
     # agents to space ratio
-    AGENTS_DENSITY = 0.3
-    # number of agents
-    NUM_OF_AGENTS = int(SPACE_SIZE * AGENTS_DENSITY)
+    agents_density = 0.3
     # range of interaction
-    RANGE = 4
+    range = 4
     # interaction power (how much is range increased)
-    FIELD_FORCE = 1
+    field_force = 1
     # initial steps of agents (conservative, creative)
-    INIT_STEP = (1, 3)
+    init_step = (1,3)
     # density of creative agents
-    CREATIVE_DENSITY = 0.5
+    creative_density = 0.5
     # starting postition of agents - random or beginning
-    POSITIONING_TYPE = 'random'
+    positioning_type = "random"
 
     # FIELDS:
     # agents - array of agents
     # targets - positions to be taken (set of ints) 
 
+    @classmethod
+    def new_society(self, space_size=50, agents_density=0.3, creative_density=0.5, field_range=4, field_force=1, init_step=(1,3), positioning_type='random'):
+        self.space_size=space_size
+        self.agents_density=agents_density
+        self.creative_density=creative_density
+        self.field_range=field_range
+        self.field_force=field_force
+        self.init_step=init_step
+        self.positioning_type=positioning_type
+        self.num_of_agents=int(self.space_size*self.agents_density)
 
-    def __init__(self):
         # create creative and conservative agents according to CREATIVE_DENSITY; position them
         self.agents = array(
             [
-            Agent(type=AgentType.CONSERVATIVE, init_step=self.INIT_STEP) 
-            for _ in range(self.NUM_OF_AGENTS)
+            Agent(type=AgentType.CONSERVATIVE, init_step=init_step) 
+            for _ in range(self.num_of_agents)
             ])
-        for i in range(int(self.CREATIVE_DENSITY * self.NUM_OF_AGENTS)):
+        for i in range(floor(self.creative_density * self.num_of_agents)):
             self.agents[i].type = AgentType.CREATIVE
         
-        if self.POSITIONING_TYPE == 'random':
-            for i in range(self.NUM_OF_AGENTS):
-                self.agents[i].set_position(randint(0, self.SPACE_SIZE))
-        elif self.POSITIONING_TYPE == 'beginnig':
-            for i in range(self.NUM_OF_AGENTS):
+        if self.positioning_type == 'random':
+            for i in range(self.num_of_agents):
+                self.agents[i].set_position(randint(0, self.space_size-1))
+        elif self.positioning_type == 'beginnig':
+            for i in range(self.num_of_agents):
                 self.agents[i].set_position(0)
 
-        for i in range(int(self.CREATIVE_DENSITY * self.NUM_OF_AGENTS)):
+        for i in range(floor(self.creative_density * self.num_of_agents)):
             self.agents[i].type = AgentType.CREATIVE
 
         # choose target positions randomly
         self.targets = set([])
-        while len(self.targets < self.NUM_OF_AGENTS):
-            self.targets.add(randint(0, self.SPACE_SIZE))
-        
+        while len(self.targets) < self.num_of_agents:
+            self.targets.add(randint(0, self.space_size-1))
 
+    @classmethod 
+    def next_step(self):
+        pass
+
+    @classmethod
     def calculate_feedback(self):
         feedback_squared = 0
         for agent in self.agents:
-            _step = 0
-            nearest_target = 0
+            distance = 0
             while True:
-                if agent.position + _step in self.targets:
-                    nearest_target = agent.position + _step
+                if agent.position + distance in self.targets:
                     break
-                elif agent.position - _step in self.targets:
-                    nearest_target = agent.position - _step
+                elif agent.position - distance in self.targets:
                     break
-                _step += 1
-            feedback += (agent.position - nearest_target) ** 2
+                distance += 1
+            feedback += distance ** 2
         return sqrt(feedback_squared)
 
 
