@@ -1,6 +1,7 @@
 from enum import Enum
 from random import uniform
 
+
 class AgentType(Enum):
     CONSERVATIVE = 'conservative'
     CREATIVE = 'creative'
@@ -11,20 +12,27 @@ class Agent():
     # step (next step range)
     # position (in 1D its int)
 
-    def __init__(self, type: AgentType, init_step:tuple, position=0):
+    def __init__(self, type: AgentType, init_step:tuple, space_size:int, position=0):
         self.type = type
+        self.space_size=space_size
         if type == AgentType.CONSERVATIVE:
-            self.range = init_step[0]
+            self.step = init_step[0]
         elif type == AgentType.CREATIVE:
-            self.range = init_step[1]
+            print(init_step[0])
+            print(init_step[1])
+            self.step = init_step[1]
         self.position = position
 
     def move_random(self):
         _chance = uniform(0,1)
         if _chance < 0.5:
-            self.position -= self.range
+            self.position -= self.step
+            if self.position < 0:
+                self.position += self.space_size
         else:
-            self.position += self.range
+            self.position += self.step
+            if self.position >= self.space_size:
+                self.position -= self.space_size
 
     def give_zeal(self):
         pass

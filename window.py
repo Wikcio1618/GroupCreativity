@@ -2,6 +2,7 @@ from tkinter import BOTH, DISABLED, E, NORMAL, W, Frame, IntVar, ttk, DoubleVar
 from customtkinter import CTkSlider, CTkButton, BooleanVar, CTkSwitch, CTkCheckBox, CTkRadioButton, CTk
 
 from canvas import CustomCanvas
+from society import Society
 
 class Window():
     # FIELDS:
@@ -40,14 +41,81 @@ class Window():
 
         def creativity_slider_event(value):
             self.creativity_slider_value_label.configure(text=f'{value:.2f}')
+            if value != Society.creative_density:
+                Society.creative_density = value
+                Society.new_society()
+                self.reset_canvas()
 
-        langton_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+        self.creativity_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
                                    , hover=False, button_color=self.PRIMARY_COLOR
 			                        , from_=0, to=1, variable=creativity_density_var, command=creativity_slider_event)
-        langton_slider.grid(column=0, row=1, padx=(20,0))
+        self.creativity_slider.grid(column=0, row=1, padx=(20,0))
         self.creativity_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{creativity_density_var.get():.2f}"
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
         self.creativity_slider_value_label.grid(column=1, row=1, pady=(10, 5))
+
+        # agents density slider
+        self.agents_density_slider_label=ttk.Label(master=params_frame, text="Agents density", font=('Arial', 14)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.agents_density_slider_label.grid(column=0, row=2, columnspan=2, pady=(30, 15))
+        agents_density_density_var = DoubleVar(value=0.5)
+
+        def agents_density_slider_event(value):
+            self.agents_density_slider_value_label.configure(text=f'{value:.2f}')
+            if value != Society.agents_density:
+                Society.agents_density=value
+                Society.new_society()
+                self.reset_canvas()
+
+        self.agents_density_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+                                   , hover=False, button_color=self.PRIMARY_COLOR
+			                        , from_=0, to=1, variable=agents_density_density_var, command=agents_density_slider_event)
+        self.agents_density_slider.grid(column=0, row=3, padx=(20,0))
+        self.agents_density_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{agents_density_density_var.get():.2f}"
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.agents_density_slider_value_label.grid(column=1, row=3, pady=(10, 5))
+
+        # field range slider
+        self.range_slider_label=ttk.Label(master=params_frame, text="Field range", font=('Arial', 14)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.range_slider_label.grid(column=2, row=0, columnspan=2, pady=(10, 15))
+        range_density_var = IntVar(value=Society.field_range)
+
+        def range_slider_event(value):
+            self.range_slider_value_label.configure(text=int(value))
+            if value != Society.field_range:
+                Society.field_range=value
+                Society.new_society()
+                self.reset_canvas()
+
+        self.range_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+                                   , hover=False, button_color=self.PRIMARY_COLOR
+			                        , from_=1, to=5, variable=range_density_var, number_of_steps=4, command=range_slider_event)
+        self.range_slider.grid(column=2, row=1, padx=(20,0))
+        self.range_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(range_density_var.get())
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.range_slider_value_label.grid(column=3, row=1, pady=(10, 5))
+
+        # field force slider
+        self.force_slider_label=ttk.Label(master=params_frame, text="Field force", font=('Arial', 14)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.force_slider_label.grid(column=2, row=2, columnspan=2, pady=(30, 15))
+        force_density_var = IntVar(value=Society.field_force)
+
+        def force_slider_event(value):
+            self.force_slider_value_label.configure(text=int(value))
+            if value != Society.field_force:
+                Society.field_force=value
+                Society.new_society()
+                self.reset_canvas()
+
+        self.force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+                                   , hover=False, button_color=self.PRIMARY_COLOR
+			                        , from_=1, to=4, variable=force_density_var, number_of_steps=3, command=force_slider_event)
+        self.force_slider.grid(column=2, row=3, padx=(20,0))
+        self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(force_density_var.get())
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
 
 
 # BUTTON FRAME
@@ -97,7 +165,8 @@ class Window():
             self.canvas.animate_society()
 
     def next_step_command(self):
-        self.canvas.draw_next_step()
+        Society.next_step()
+        self.canvas.draw_society()
 
     def reset_canvas(self):
         self.canvas.init_new()
