@@ -26,6 +26,15 @@ class CustomCanvas(Canvas):
 		
         super().__init__(root, width=self.WIDTH, height=self.HEIGHT, bg=bg_color
                          , bd=1, highlightbackground=primary_col, scrollregion=(0, 0, np.inf, 0))
+        
+        # day text
+        ttk.Label(master=self, text="DAY:", font=('Arial', 17)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR).place(x=self.WIDTH/2 - 15, y=self.HEIGHT * 0.85)
+
+        # day counter label
+        self.day_label = ttk.Label(master=self, text="0", font=('Arial', 15)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.day_label.place(x=self.WIDTH/2, y=self.HEIGHT * 0.85 + 30)
 
         self.init_new()
 
@@ -50,7 +59,8 @@ class CustomCanvas(Canvas):
         self.delete("progress")
         for pos in range(Society.space_size):
             pos_agents = [agent for agent in Society.agents if agent.position == pos]
-            for i, agent in enumerate(pos_agents):
+            pos_agents_sorted = sorted (pos_agents, key=lambda agent: agent.step)
+            for i, agent in enumerate(pos_agents_sorted):
                 self.draw_agent(agent, i)
 
         self.draw_progress_bar()
@@ -81,13 +91,13 @@ class CustomCanvas(Canvas):
         y1 = self.HEIGHT * 0.7
         y2 = y1 + 20
         self.create_rectangle(x1, y1, x2, y2, fill="", outline=self.PRIMARY_COLOR)
-        num_taken_targets = len(Society.agents) - len(Society.targets - set([agent.position for agent in Society.agents])) # '-' operator works like vienn diagram
-        x2_progress = x1 + (x2 - x1) * num_taken_targets / len(Society.agents)
+        x2_progress = x1 + (x2 - x1) * (len(Society.agents) - len(Society.targets_left)) / len(Society.agents)
         self.create_rectangle(x1, y1, x2_progress, y2, fill=self.PRIMARY_COLOR, outline="", tags="progress")
 
     def init_new(self):
         Society.new_society()
         self.delete("all")
+
         self.box_size = (self.WIDTH - self.OUTER_MARGIN*2) / Society.space_size
         self.x_box_center = lambda x: self.OUTER_MARGIN + self.box_size/2 + x * self.box_size
         self.inner_margin = self.box_size * 0.15 # margin around agents in the box
@@ -101,15 +111,6 @@ class CustomCanvas(Canvas):
                 self.create_rectangle(x1, y1, x2, y2, fill=self.TARGET_COLOR)
             else:
                 self.create_rectangle(x1, y1, x2, y2, fill=self.BOX_COLOR)
-        
-        # day text
-        ttk.Label(master=self, text="DAY:", font=('Arial', 17)
-	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR).place(x=self.WIDTH/2 - 15, y=self.HEIGHT * 0.85)
-
-        # day counter label
-        self.day_label = ttk.Label(master=self, text=Society.day, font=('Arial', 15)
-	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.day_label.place(x=self.WIDTH/2, y=self.HEIGHT * 0.85 + 30)
 
         self.draw_society()
         

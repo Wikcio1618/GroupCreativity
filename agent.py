@@ -27,18 +27,20 @@ class Agent():
         _chance = uniform(0,1)
         if _chance < 0.5:
             self.position -= self.step
-            if self.position < 0:
+            while self.position < 0:
                 self.position += self.space_size
         else:
             self.position += self.step
-            if self.position >= self.space_size:
+            while self.position >= self.space_size:
                 self.position -= self.space_size
 
-    def give_zeal(self):
-        pass
+    def give_zeal(self, force:int):
+        self.step += force
 
-    def cool_down(self):
-        pass
+    def cool_down(self, force:int):
+        self.step -= force
+        if self.step < 1:
+            self.step = 1
 
     def set_position(self, position:int):
         self.position=position

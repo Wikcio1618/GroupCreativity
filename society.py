@@ -25,6 +25,7 @@ class Society:
     # FIELDS:
     # agents - array of agents
     # targets - positions to be taken (set of ints) 
+    # targets_left
     # day - time iterations
 
     @classmethod
@@ -55,35 +56,57 @@ class Society:
         self.targets = set([])
         while len(self.targets) < self.num_of_agents:
             self.targets.add(randint(0, self.space_size-1))
+        self.targets_left = self.targets.copy()
+        self.check_targets()
 
     @classmethod 
     def next_step(self):
+
         self.day += 1
-        self.check_targets()
+        # interaction between agents
+        feedback = self.calculate_feedback()
+        for agent in self.agents:
+            if agent.type == AgentType.CONSERVATIVE and agent.step > feedback and agent.step !=0:
+                in_range_neighbours = [nei for nei in Society.agents if abs(agent.position - nei.position) <= self.field_range]
+                for nei in in_range_neighbours:
+                    if nei.step != 0: # has not found target
+                        nei.cool_down(self.field_force)
+
+            elif agent.type == AgentType.CREATIVE and agent.step < feedback and agent.step !=0:
+                in_range_neighbours = [nei for nei in Society.agents if abs(agent.position - nei.position) <= self.field_range]
+                for nei in in_range_neighbours:
+                    if nei.step != 0:
+                        nei.give_zeal(self.field_force)
+
+        print(feedback)
+        # move agents
         for agent in self.agents:
             agent.move_random()
+
+        self.check_targets()
 
     @classmethod
     def check_targets(self):
         _temp_agents = self.agents.copy()
         shuffle(_temp_agents)
         for agent in _temp_agents:
-            if agent.position in self.targets:
+            if agent.position in self.targets_left:
                 agent.step = 0
-                self.targets.remove(agent.position) # remove from targets temporarily
+                self.targets_left.remove(agent.position) # remove from targets temporarily
 
     @classmethod
     def calculate_feedback(self):
         feedback_squared = 0
-        for agent in self.agents:
+        for agent in [agent for agent in self.agents if agent.step != 0]:
             distance = 0
             while True:
-                if agent.position + distance in self.targets:
-                    break
-                elif agent.position - distance in self.targets:
+                if (agent.position + distance in self.targets_left or 
+                agent.position + Society.space_size - distance in self.targets_left or 
+                agent.position - distance in self.targets_left or 
+                agent.position - Society.space_size + distance in self.targets_left):
                     break
                 distance += 1
-            feedback += distance ** 2
+            feedback_squared += distance ** 2
         return sqrt(feedback_squared)
 
 
