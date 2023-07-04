@@ -29,13 +29,12 @@ class Society:
     # day - time iterations
 
     def __init__(self, space_size=30, agents_density=0.3, creative_density=0.3
-                 , field_range=3, field_force=1, init_step=tuple([1,3]), positioning_type="random"):
+                 , field_range=3, field_force=0.05, positioning_type="random"):
         self.space_size=space_size
         self.agents_density=agents_density
         self.creative_density=creative_density
         self.field_range=field_range
         self.field_force=field_force
-        self.init_step=init_step
         self.positioning_type=positioning_type
 
         self.new_society()
@@ -46,12 +45,11 @@ class Society:
         self.num_of_agents=int(self.space_size * self.agents_density)
         self.agents = array(
             [
-            Agent(type=AgentType.CONSERVATIVE, init_step=self.init_step, space_size=self.space_size) 
+            Agent(type=AgentType.CONSERVATIVE, space_size=self.space_size) 
             for _ in range(self.num_of_agents)
             ])
         for i in range(floor(self.creative_density * self.num_of_agents)):
             self.agents[i].type = AgentType.CREATIVE
-            self.agents[i].step = self.init_step[1]
         
         if self.positioning_type == 'random':
             for i in range(self.num_of_agents):
@@ -75,17 +73,17 @@ class Society:
         # interaction between agents
         feedback = self.calculate_feedback()
         for agent in self.agents:
-            if agent.type == AgentType.CONSERVATIVE and agent.step > feedback and agent.step !=0:
+            if agent.type == AgentType.CONSERVATIVE and feedback < self.space_size * 0.1 and agent.step !=0:
                 in_range_neighbours = [nei for nei in self.agents if abs(agent.position - nei.position) <= self.field_range]
                 for nei in in_range_neighbours:
                     if nei.step != 0: # has not found target
                         nei.cool_down(self.field_force)
 
-            elif agent.type == AgentType.CREATIVE and agent.step < feedback and agent.step !=0:
+            elif agent.type == AgentType.CREATIVE and feedback > self.space_size * 0.1 and agent.step !=0:
                 in_range_neighbours = [nei for nei in self.agents if abs(agent.position - nei.position) <= self.field_range]
                 for nei in in_range_neighbours:
                     if nei.step != 0:
-                        nei.give_zeal(self.field_force)
+                        nei.shift_right(self.field_force)
 
         # print(feedback)
         # move agents
@@ -100,7 +98,7 @@ class Society:
         for agent in _temp_agents:
             if agent.position in self.targets_left:
                 agent.step = 0
-                self.targets_left.remove(agent.position) # remove from targets temporarily
+                self.targets_left.remove(agent.position)
 
     def calculate_feedback(self):
         feedback_squared = 0

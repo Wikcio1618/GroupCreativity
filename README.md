@@ -10,8 +10,9 @@ There are also N target positions randomly selected. The goal of agents is to as
 ### Distinct rules that may differ in other branches
 1. Agents start at random positions
 2. Space is looped
-3. Each creative agent at the end of i-th day increases step of agents in range r by F, PROVIDED THAT d(t_i) is greater than their step
-4. Conservative agents interact in a symmetrical way
+3. Each agent starts with some p percentage of moving 1 step right.
+4. If agent is creative, he increases others p in range r by F, provided that $d(t_i)$ is greater than something.
+5. Conservative agents lower p but no more than to 0.5
 
 
 ## TODO

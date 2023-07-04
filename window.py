@@ -103,10 +103,10 @@ class Window():
         self.force_slider_label=ttk.Label(master=params_frame, text="Field force", font=('Arial', 14)
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
         self.force_slider_label.grid(column=2, row=2, columnspan=2, pady=(30, 15))
-        force_density_var = IntVar(value=self.society.field_force)
+        force_density_var = DoubleVar(value=self.society.field_force)
 
         def force_slider_event(value):
-            self.force_slider_value_label.configure(text=int(value))
+            self.force_slider_value_label.configure(text=f'{value:.2f}')
             if value != self.society.field_force:
                 self.society.field_force=value
                 self.society.new_society()
@@ -114,9 +114,9 @@ class Window():
 
         self.force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
                                    , hover=False, button_color=self.PRIMARY_COLOR
-			                        , from_=1, to=4, variable=force_density_var, number_of_steps=3, command=force_slider_event)
+			                        , from_=0.01, to=0.5, variable=force_density_var, command=force_slider_event)
         self.force_slider.grid(column=2, row=3, padx=(20,0))
-        self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(force_density_var.get())
+        self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=force_density_var.get()
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
         self.force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
 
