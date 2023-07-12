@@ -136,6 +136,7 @@ class CustomCanvas(Canvas):
         plot_widget.place(x=self.OUTER_MARGIN, y=self.HEIGHT * 0.5)
 
 
+    # called everytime we want to draw current state on graph 
     def update_graph(self):
         self.graph_x_data.append(self.society.day)
         all_progress = self.society.get_all_progress()
@@ -156,6 +157,7 @@ class CustomCanvas(Canvas):
 
         self.graph.draw()
 
+    # clear all lines on graph
     def reset_graph(self):
         self.graph_all_data = []
         self.graph_crea_data = []

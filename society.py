@@ -116,6 +116,8 @@ class Society:
             feedback_squared += distance ** 2
         return sqrt(feedback_squared / len(self.agents))
 
+# FUNCTIONS THAT RETURN PROGRESS ie how much percent of agents found a target
+
     def get_all_progress(self):
         if len(self.agents) == 0:
             progress = 1

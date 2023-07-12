@@ -34,13 +34,16 @@ class Agent():
             while self.position >= self.space_size:
                 self.position -= self.space_size
 
+    # increase the step of this agent
     def give_zeal(self, force:int):
         self.step += force
 
+    # decreace the step
     def cool_down(self, force:int):
         self.step -= force
         if self.step < 1:
             self.step = 1
 
+    # move agent
     def set_position(self, position:int):
         self.position=position
