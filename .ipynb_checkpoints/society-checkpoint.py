@@ -1,140 +1,83 @@
 from math import floor, sqrt
 from numpy import array
-from random import randint, shuffle
+from random import randint, choice
 
 from agent import Agent, AgentType
 
 class Society:
-    # -- GAME PARAMS -- #
-    # space size 
-    # space_size = 50
-    # agents to space ratio
-    # agents_density = 0.3
-    # range of interaction
-    # field_range = 4
-    # interaction power (how much is range increased)
-    # field_force = 1
-    # initial steps of agents (conservative, creative)
-    # init_step = tuple([1,3])
     # density of creative agents
     # creative_density = 0.5
-    # starting postition of agents - random or beginning
-    # positioning_type = "random"
-
+    NUM_OF_NEIGHBOURS = 3
+    TARGET_PROGRESS = 3
 
     # FIELDS:
     # agents - array of agents
-    # targets - positions to be taken (set of ints) 
-    # targets_left
     # day - time iterations
+    # progress
 
-    def __init__(self, space_size=30, agents_density=0.3, creative_density=0.3
-                 , field_range=3, field_force=1, init_step=tuple([1,3]), positioning_type="random"):
-        self.space_size=space_size
-        self.agents_density=agents_density
-        self.creative_density=creative_density
-        self.field_range=field_range
-        self.field_force=field_force
-        self.init_step=init_step
-        self.positioning_type=positioning_type
-
+    def __init__(self, creativity_mean, openness_mean, num_of_agents=25):
+        self.num_of_agents=num_of_agents
+        self.creativity_mean = creativity_mean
+        self.openness_mean = openness_mean
         self.new_society()
 
     def new_society(self):
+        self.progress = 0
         self.day = 0
         # create creative and conservative agents according to CREATIVE_DENSITY; position them
-        self.num_of_agents=int(self.space_size * self.agents_density)
-        self.agents = array(
-            [
-            Agent(type=AgentType.CONSERVATIVE, init_step=self.init_step, space_size=self.space_size) 
-            for _ in range(self.num_of_agents)
-            ])
-        for i in range(floor(self.creative_density * self.num_of_agents)):
-            self.agents[i].type = AgentType.CREATIVE
-            self.agents[i].step = self.init_step[1]
-        
-        if self.positioning_type == 'random':
-            for i in range(self.num_of_agents):
-                self.agents[i].set_position(randint(0, self.space_size-1))
-        elif self.positioning_type == 'beginnig':
-            for i in range(self.num_of_agents):
-                self.agents[i].set_position(0)
+        self.agents = array([Agent() for _ in range(self.num_of_agents)])
 
-        for i in range(floor(self.creative_density * self.num_of_agents)):
-            self.agents[i].type = AgentType.CREATIVE
-
-        # choose target positions randomly
-        self.targets = set([])
-        while len(self.targets) < self.num_of_agents:
-            self.targets.add(randint(0, self.space_size-1))
-        self.targets_left = self.targets.copy()
-        self.check_targets()
+        for _ in range(floor(self.creativity_mean * self.num_of_agents * 100)):
+            choice(self.agents).creativity += 0.01
+        for _ in range(floor(self.openness_mean * self.num_of_agents * 100)):
+            choice(self.agents).openness += 0.01
  
     def next_step(self):
+        agent = choice(self.agents)
+        neighbours = set([])
+        # find neighbours
+        while len(neighbours) < self.NUM_OF_NEIGHBOURS:
+            neighbours.add(choice(self.agents))
+        
+        if sum([nei.openness for nei in neighbours])/len(neighbours) >= agent.creativity:
+            # acceptance aquired
+            self.progress += agent.creativity
         self.day += 1
-        # interaction between agents
-        feedback = self.calculate_feedback()
-        for agent in self.agents:
-            if agent.type == AgentType.CONSERVATIVE and agent.step > feedback and agent.step !=0:
-                in_range_neighbours = [nei for nei in self.agents if abs(agent.position - nei.position) <= self.field_range]
-                for nei in in_range_neighbours:
-                    if nei.step != 0: # has not found target
-                        nei.cool_down(self.field_force)
+	
+	# runs society and returns number of days
+    def run_until_target(self, max_days = 10**5) -> int:
+        self.new_society()
+        while self.progress < self.TARGET_PROGRESS and self.day < max_days:
+            self.next_step()
+        return self.day
 
-            elif agent.type == AgentType.CREATIVE and agent.step < feedback and agent.step !=0:
-                in_range_neighbours = [nei for nei in self.agents if abs(agent.position - nei.position) <= self.field_range]
-                for nei in in_range_neighbours:
-                    if nei.step != 0:
-                        nei.give_zeal(self.field_force)
+    def run_until_time(self, time=100) -> int:
+        self.new_society()
+        for _ in range(time):
+            self.next_step()
+        return self.progress
 
-        # print(feedback)
-        # move agents
-        for agent in self.agents:
-            agent.move_random()
+# # FUNCTIONS THAT RETURN PROGRESS ie how much percent of agents found a target
 
-        self.check_targets()
-
-    def check_targets(self):
-        _temp_agents = self.agents.copy()
-        shuffle(_temp_agents)
-        for agent in _temp_agents:
-            if agent.position in self.targets_left:
-                agent.step = 0
-                self.targets_left.remove(agent.position) # remove from targets temporarily
-
-    def calculate_feedback(self):
-        feedback_squared = 0
-        for agent in [agent for agent in self.agents if agent.step != 0]:
-            distance = 0
-            while True:
-                if (agent.position + distance in self.targets_left or 
-                agent.position + self.space_size - distance in self.targets_left or 
-                agent.position - distance in self.targets_left or 
-                agent.position - self.space_size + distance in self.targets_left):
-                    break
-                distance += 1
-            feedback_squared += distance ** 2
-        return sqrt(feedback_squared / len(self.agents))
-
-    def get_all_progress(self):
-        if len(self.agents) == 0:
-            progress = 1
-        else:
-            progress = (1 - len(self.targets_left) / len(self.agents))
-        return progress
+#     def get_all_progress(self):
+#         if len(self.agents) == 0:
+#             progress = 1
+#         else:
+#             progress = (1 - len(self.targets_left) / len(self.agents))
+#         return progress
     
-    def get_crea_progress(self):
-        if len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]) == 0:
-            progress = 1
-        else :
-            progress = (len([agent for agent in self.agents if (agent.type == AgentType.CREATIVE and agent.step == 0)]) 
-        / len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]))
-        return progress
+#     def get_crea_progress(self):
+#         if len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]) == 0:
+#             progress = 1
+#         else :
+#             progress = (len([agent for agent in self.agents if (agent.type == AgentType.CREATIVE and agent.step == 0)]) 
+#         / len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]))
+#         return progress
     
-    def get_cons_progress(self):
-        if len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]) == 0:
-            progress = 1
-        else :
-            progress = (len([agent for agent in self.agents if (agent.type == AgentType.CONSERVATIVE and agent.step == 0)]) 
-        / len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]))
-        return progress
+#     def get_cons_progress(self):
+#         if len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]) == 0:
+#             progress = 1
+#         else :
+#             progress = (len([agent for agent in self.agents if (agent.type == AgentType.CONSERVATIVE and agent.step == 0)]) 
+#         / len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]))
+#         return progress
