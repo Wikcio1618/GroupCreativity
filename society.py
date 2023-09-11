@@ -15,10 +15,11 @@ class Society:
     # day - time iterations
     # progress
 
-    def __init__(self, creativity_mean, openness_mean, num_of_agents=25):
+    def __init__(self, creativity_mean, openness_mean, force=0.05, num_of_agents=25):
         self.num_of_agents=num_of_agents
         self.creativity_mean = creativity_mean
         self.openness_mean = openness_mean
+        self.force = force
         self.new_society()
 
     def new_society(self):
@@ -42,6 +43,10 @@ class Society:
         if sum([nei.openness for nei in neighbours])/len(neighbours) >= agent.creativity:
             # acceptance aquired
             self.progress += agent.creativity
+            agent.add_creativity(self.force)
+        else:
+            agent.add_creativity(-self.force)
+
         self.day += 1
 	
 	# runs society and returns number of days
@@ -56,28 +61,3 @@ class Society:
         for _ in range(time):
             self.next_step()
         return self.progress
-
-# # FUNCTIONS THAT RETURN PROGRESS ie how much percent of agents found a target
-
-#     def get_all_progress(self):
-#         if len(self.agents) == 0:
-#             progress = 1
-#         else:
-#             progress = (1 - len(self.targets_left) / len(self.agents))
-#         return progress
-    
-#     def get_crea_progress(self):
-#         if len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]) == 0:
-#             progress = 1
-#         else :
-#             progress = (len([agent for agent in self.agents if (agent.type == AgentType.CREATIVE and agent.step == 0)]) 
-#         / len([agent for agent in self.agents if agent.type == AgentType.CREATIVE]))
-#         return progress
-    
-#     def get_cons_progress(self):
-#         if len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]) == 0:
-#             progress = 1
-#         else :
-#             progress = (len([agent for agent in self.agents if (agent.type == AgentType.CONSERVATIVE and agent.step == 0)]) 
-#         / len([agent for agent in self.agents if agent.type == AgentType.CONSERVATIVE]))
-#         return progress
