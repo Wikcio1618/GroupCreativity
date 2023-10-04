@@ -11,12 +11,13 @@ class Society:
     # progress
 	# num_of_tasks how much tasks can one agent do
 
-	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=25, num_of_voters=3, num_of_tasks=5):
+	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=25, num_of_voters=3, num_of_tasks=5, force=0):
 		self.num_of_agents=num_of_agents
 		self.creativity_mean = creativity_mean
 		self.openness_mean = openness_mean
 		self.num_of_voters = num_of_voters
 		self.num_of_tasks = num_of_tasks
+		self.force = force
 		self.new_society()
 
 	def new_society(self):
@@ -48,6 +49,9 @@ class Society:
 			self.progress += idea_giver.creativity
 			for voter in voters:
 				voter.add_resource(-1/self.num_of_tasks)
+			idea_giver.add_creativity(self.force)
+		else:
+			idea_giver.add_creativity(-self.force)
 
 		self.day += 1
 	
