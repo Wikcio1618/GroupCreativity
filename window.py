@@ -11,8 +11,8 @@ class Window():
     # start_stop_button
 
     # Define lead colors for window
-    PRIMARY_COLOR = "gold"
-    BG_COLOR = "midnightblue"
+    PRIMARY_COLOR = "#8B5742"
+    BG_COLOR = "oldlace"
     DISABLED_COLOR = "grey"
 
     def __init__(self):
@@ -37,88 +37,88 @@ class Window():
         params_frame.grid(column=0, row=0, sticky='WENS')
 
         # creativity slider
-        self.creativity_slider_label=ttk.Label(master=params_frame, text="Creative agents density", font=('Arial', 14)
+        self.creativity_mean_slider_label=ttk.Label(master=params_frame, text="Mean creativity", font=('Arial', 14)
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.creativity_slider_label.grid(column=0, row=0, columnspan=2, pady=(10, 15))
-        creativity_density_var = DoubleVar(value=self.society.agents_density)
+        self.creativity_mean_slider_label.grid(column=0, row=0, columnspan=2, pady=(10, 15))
+        creativity_mean_var = DoubleVar(value=self.society.creativity_mean)
 
-        def creativity_slider_event(value):
-            self.creativity_slider_value_label.configure(text=f'{value:.2f}')
-            if value != self.society.creative_density:
-                self.society.creative_density = value
+        def creativity_mean_slider_event(value):
+            self.creativity_mean_slider_value_label.configure(text=f'{value:.2f}')
+            if value != self.society.creativity_mean:
+                self.society.creativity_mean = value
                 self.society.new_society()
                 self.reset_canvas()
 
-        self.creativity_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+        self.creativity_mean_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
                                    , hover=False, button_color=self.PRIMARY_COLOR
-			                        , from_=0, to=1, variable=creativity_density_var, command=creativity_slider_event)
-        self.creativity_slider.grid(column=0, row=1, padx=(20,0))
-        self.creativity_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{creativity_density_var.get():.2f}"
+			                        , from_=0, to=1, variable=creativity_mean_var, command=creativity_mean_slider_event)
+        self.creativity_mean_slider.grid(column=0, row=1, padx=(20,0))
+        self.creativity_mean_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{creativity_mean_var.get():.2f}"
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.creativity_slider_value_label.grid(column=1, row=1, pady=(10, 5))
+        self.creativity_mean_slider_value_label.grid(column=1, row=1, pady=(10, 5))
 
-        # agents density slider
-        self.agents_density_slider_label=ttk.Label(master=params_frame, text="Agents density", font=('Arial', 14)
+        # oppennes mean slider
+        self.openness_mean_slider_label=ttk.Label(master=params_frame, text="Openness mean", font=('Arial', 14)
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.agents_density_slider_label.grid(column=0, row=2, columnspan=2, pady=(30, 15))
-        agents_density_density_var = DoubleVar(value=self.society.agents_density)
+        self.openness_mean_slider_label.grid(column=0, row=2, columnspan=2, pady=(30, 15))
+        openness_mean_var = DoubleVar(value=self.society.openness_mean)
 
-        def agents_density_slider_event(value):
-            self.agents_density_slider_value_label.configure(text=f'{value:.2f}')
-            if value != self.society.agents_density:
-                self.society.agents_density=value
+        def openness_mean_slider_event(value):
+            self.openness_mean_slider_value_label.configure(text=f'{value:.2f}')
+            if value != self.society.openness_mean:
+                self.society.openness_mean=value
                 self.society.new_society()
                 self.reset_canvas()
 
-        self.agents_density_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+        self.openness_mean_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
                                    , hover=False, button_color=self.PRIMARY_COLOR
-			                        , from_=0, to=1, variable=agents_density_density_var, command=agents_density_slider_event)
-        self.agents_density_slider.grid(column=0, row=3, padx=(20,0))
-        self.agents_density_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{agents_density_density_var.get():.2f}"
+			                        , from_=0, to=1, variable=openness_mean_var, command=openness_mean_slider_event)
+        self.openness_mean_slider.grid(column=0, row=3, padx=(20,0))
+        self.openness_mean_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=f"{openness_mean_var.get():.2f}"
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.agents_density_slider_value_label.grid(column=1, row=3, pady=(10, 5))
+        self.openness_mean_slider_value_label.grid(column=1, row=3, pady=(10, 5))
 
-        # field range slider
-        self.range_slider_label=ttk.Label(master=params_frame, text="Field range", font=('Arial', 14)
+        # creativity force slider
+        self.creativity_force_slider_label=ttk.Label(master=params_frame, text="Creativity force", font=('Arial', 14)
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.range_slider_label.grid(column=2, row=0, columnspan=2, pady=(10, 15))
-        range_density_var = IntVar(value=self.society.field_range)
+        self.creativity_force_slider_label.grid(column=2, row=0, columnspan=2, pady=(10, 15))
+        creativity_force_density_var = DoubleVar(value=self.society.creativity_force)
 
-        def range_slider_event(value):
-            self.range_slider_value_label.configure(text=int(value))
-            if value != self.society.field_range:
-                self.society.field_range=value
+        def creativity_force_slider_event(value):
+            self.creativity_force_slider_value_label.configure(text=f'{value:.2f}')
+            if value != self.society.creativity_force:
+                self.society.creativity_force=value
                 self.society.new_society()
                 self.reset_canvas()
 
-        self.range_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+        self.creativity_force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
                                    , hover=False, button_color=self.PRIMARY_COLOR
-			                        , from_=1, to=5, variable=range_density_var, number_of_steps=4, command=range_slider_event)
-        self.range_slider.grid(column=2, row=1, padx=(20,0))
-        self.range_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(range_density_var.get())
+			                        , from_=0, to=0.5, number_of_steps=10, variable=creativity_force_density_var, command=creativity_force_slider_event )
+        self.creativity_force_slider.grid(column=2, row=1, padx=(20,0))
+        self.creativity_force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(creativity_force_density_var.get())
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.range_slider_value_label.grid(column=3, row=1, pady=(10, 5))
+        self.creativity_force_slider_value_label.grid(column=3, row=1, pady=(10, 5))
 
-        # field force slider
-        self.force_slider_label=ttk.Label(master=params_frame, text="Field force", font=('Arial', 14)
-	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.force_slider_label.grid(column=2, row=2, columnspan=2, pady=(30, 15))
-        force_density_var = IntVar(value=self.society.field_force)
+    #     # field force slider
+    #     self.force_slider_label=ttk.Label(master=params_frame, text="Field force", font=('Arial', 14)
+	#    , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+    #     self.force_slider_label.grid(column=2, row=2, columnspan=2, pady=(30, 15))
+    #     force_density_var = IntVar(value=self.society.field_force)
 
-        def force_slider_event(value):
-            self.force_slider_value_label.configure(text=int(value))
-            if value != self.society.field_force:
-                self.society.field_force=value
-                self.society.new_society()
-                self.reset_canvas()
+    #     def force_slider_event(value):
+    #         self.force_slider_value_label.configure(text=int(value))
+    #         if value != self.society.field_force:
+    #             self.society.field_force=value
+    #             self.society.new_society()
+    #             self.reset_canvas()
 
-        self.force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
-                                   , hover=False, button_color=self.PRIMARY_COLOR
-			                        , from_=1, to=4, variable=force_density_var, number_of_steps=3, command=force_slider_event)
-        self.force_slider.grid(column=2, row=3, padx=(20,0))
-        self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(force_density_var.get())
-	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-        self.force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
+    #     self.force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+    #                                , hover=False, button_color=self.PRIMARY_COLOR
+	# 		                        , from_=1, to=4, variable=force_density_var, number_of_steps=3, command=force_slider_event)
+    #     self.force_slider.grid(column=2, row=3, padx=(20,0))
+    #     self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(force_density_var.get())
+	#    , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+    #     self.force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
 
 
 # BUTTON FRAME
@@ -209,36 +209,36 @@ class Window():
 
     def set_param_widgets_active(self, is_active:bool):
         if is_active:
-            self.creativity_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
-            self.creativity_slider_label.configure(foreground=self.PRIMARY_COLOR)
-            self.creativity_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
+            self.creativity_mean_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
+            self.creativity_mean_slider_label.configure(foreground=self.PRIMARY_COLOR)
+            self.creativity_mean_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
 
-            self.agents_density_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
-            self.agents_density_slider_label.configure(foreground=self.PRIMARY_COLOR)
-            self.agents_density_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
+            self.openness_mean_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
+            self.openness_mean_slider_label.configure(foreground=self.PRIMARY_COLOR)
+            self.openness_mean_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
 
-            self.range_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
-            self.range_slider_label.configure(foreground=self.PRIMARY_COLOR)
-            self.range_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
+            self.creativity_force_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
+            self.creativity_force_slider_label.configure(foreground=self.PRIMARY_COLOR)
+            self.creativity_force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
 
-            self.force_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
-            self.force_slider_label.configure(foreground=self.PRIMARY_COLOR)
-            self.force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
+            # self.force_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
+            # self.force_slider_label.configure(foreground=self.PRIMARY_COLOR)
+            # self.force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
             
         else:
-            self.creativity_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
-            self.creativity_slider_label.configure(foreground=self.DISABLED_COLOR)
-            self.creativity_slider_value_label.configure(foreground=self.DISABLED_COLOR)
+            self.creativity_mean_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
+            self.creativity_mean_slider_label.configure(foreground=self.DISABLED_COLOR)
+            self.creativity_mean_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 
-            self.agents_density_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
-            self.agents_density_slider_label.configure(foreground=self.DISABLED_COLOR)
-            self.agents_density_slider_value_label.configure(foreground=self.DISABLED_COLOR)
+            self.openness_mean_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
+            self.openness_mean_slider_label.configure(foreground=self.DISABLED_COLOR)
+            self.openness_mean_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 
-            self.range_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
-            self.range_slider_label.configure(foreground=self.DISABLED_COLOR)
-            self.range_slider_value_label.configure(foreground=self.DISABLED_COLOR)
+            self.creativity_force_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
+            self.creativity_force_slider_label.configure(foreground=self.DISABLED_COLOR)
+            self.creativity_force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 
-            self.force_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
-            self.force_slider_label.configure(foreground=self.DISABLED_COLOR)
-            self.force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
+            # self.force_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
+            # self.force_slider_label.configure(foreground=self.DISABLED_COLOR)
+            # self.force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 

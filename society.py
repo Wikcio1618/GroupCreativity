@@ -11,13 +11,13 @@ class Society:
     # progress
 	# num_of_tasks how much tasks can one agent do
 
-	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=25, num_of_voters=3, num_of_tasks=5, force=0):
+	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=10, num_of_voters=3, num_of_tasks=5, creativity_force=0):
 		self.num_of_agents=num_of_agents
 		self.creativity_mean = creativity_mean
 		self.openness_mean = openness_mean
 		self.num_of_voters = num_of_voters
 		self.num_of_tasks = num_of_tasks
-		self.force = force
+		self.creativity_force = creativity_force
 		self.new_society()
 
 	def new_society(self):
@@ -27,9 +27,9 @@ class Society:
 		self.agents = array([Agent() for _ in range(self.num_of_agents)])
 
 		for _ in range(floor(self.creativity_mean * self.num_of_agents * 100)):
-			choice(self.agents).creativity += 0.01
+			choice(self.agents).add_creativity(0.01)
 		for _ in range(floor(self.openness_mean * self.num_of_agents * 100)):
-			choice(self.agents).openness += 0.01
+			choice(self.agents).add_openness(0.01)
  
 	def next_step(self):
 		idea_giver = choice(self.agents)
@@ -40,7 +40,7 @@ class Society:
         
 		_vote_result=0
 		for voter in voters:
-			if voter.openness >= idea_giver.creativity and voter.resource >= (1-idea_giver.creativity):
+			if voter.openness >= idea_giver.creativity and voter.resource > (1-idea_giver.creativity):
 				_vote_result += 1
 			else:
 				_vote_result += -1
@@ -49,9 +49,9 @@ class Society:
 			self.progress += idea_giver.creativity
 			for voter in voters:
 				voter.add_resource(-1/self.num_of_tasks)
-			idea_giver.add_creativity(self.force)
+			idea_giver.add_creativity(self.creativity_force)
 		else:
-			idea_giver.add_creativity(-self.force)
+			idea_giver.add_creativity(-self.creativity_force)
 
 		self.day += 1
 	
