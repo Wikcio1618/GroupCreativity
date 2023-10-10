@@ -1,4 +1,5 @@
 from math import floor, sqrt, exp
+import numpy as np
 from numpy import array
 from random import randint, choice
 
@@ -12,12 +13,10 @@ class Society:
 	# num_of_tasks how much tasks can one agent do
 
 	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=100
-			  , num_of_voters=1, num_of_tasks=3, creativity_force=0, openness_force=0, temperature=0):
+			  , creativity_force=0, openness_force=0, temperature=0):
 		self.num_of_agents=num_of_agents
 		self.creativity_mean = creativity_mean
 		self.openness_mean = openness_mean
-		self.num_of_voters = num_of_voters
-		self.num_of_tasks = num_of_tasks
 		self.creativity_force = creativity_force
 		self.openness_force = openness_force
 		self.temperature = temperature
@@ -35,30 +34,24 @@ class Society:
 			choice(self.agents).add_openness(0.01)
  
 	def next_step(self):
+		# find idea_giver and neighbour
+		considered_agents = set([])
 		idea_giver = choice(self.agents)
-		voters = set([])
-        # find neighbours
-		while len(voters) < self.num_of_voters:
-			voters.add(choice(self.agents))
-        
-		_vote_result=0
-		for voter in voters:
-			if voter.openness >= idea_giver.creativity and voter.resource > (1-idea_giver.creativity):
-				_vote_result += 1
-			else:
-				_vote_result += -1
-		if _vote_result > 0:
+		considered_agents.add(idea_giver)
+		while len(considered_agents) < 2:
+			print('test')
+			voter = choice(self.agents)
+			considered_agents.add(voter)
+
+		vote_accepted=(np.random.uniform() < self.sigmoid(voter.openness - idea_giver.creativity, self.temperature))
+		if vote_accepted:
 			# idea accepted
 			self.progress += idea_giver.creativity
-			for voter in voters:
-				if self.num_of_tasks !=0:
-					voter.add_resource(-1/self.num_of_tasks)
-				voter.add_openness(-self.openness_force)
+			voter.add_openness(-self.openness_force)
 			idea_giver.add_creativity(+self.creativity_force)
 		else:
-			for voter in voters:
-				voter.add_openness(+self.openness_force)
 			idea_giver.add_creativity(-self.creativity_force)
+			voter.add_openness(+self.openness_force)
 
 		self.day += 1
 	
@@ -75,5 +68,8 @@ class Society:
 			self.next_step()
 		return self.progress
 
+	@staticmethod
 	def sigmoid(x, T):
-		1/(1+exp(-x/T))
+		if T==0:
+			return np.heaviside(x, 0.5)
+		return 1/(1+exp(-x/T))
