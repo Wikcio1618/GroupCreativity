@@ -1,6 +1,7 @@
 from threading import Event, Thread
 import time
 from tkinter import Canvas, ttk
+from matplotlib.backend_bases import RendererBase
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -40,7 +41,7 @@ class CustomCanvas(Canvas):
     #     self.day_label.place(x=self.WIDTH/2, y=self.HEIGHT * 0.85 + 30)
 
         # graph
-        self.init_graph()
+        self.init_charts()
 
         self.init_new()
 
@@ -50,35 +51,13 @@ class CustomCanvas(Canvas):
 
     # ----------------------- init ---------------------
 
-	
-	# make the canvas being updated
-    def start_update(self):
-        self.thread_running_event.set()
-	
-	# stop the canvas from updating
-    def stop_update(self):
-        self.thread_running_event.clear()
-
-    # for continous evolution of society
-    def animate_society(self):
-        while self.thread_running_event.is_set():
-            self.society.next_step()          
-            self.draw_society()
-            time.sleep(0.05)
-
     # function that updates colors with current state of society. is called by next step button and by animate society
     def draw_society(self):
-        self.update_graph()
+        self.update_charts()
         for i, agent in enumerate(self.society.agents):
             colors = self.get_agent_colors(agent)
             for j, rectangle in enumerate(self.agents_obj[i]):
                 self.itemconfig(rectangle, fill=colors[j])
-        # self.day_label.configure(text=self.society.day)
-        # if self.society.get_all_progress() == 1.0:
-        #     self.window.set_param_widgets_active(True)
-        #     self.window.set_run_button_active(False)
-        #     self.window.set_next_step_button_active(False)
-        #     self.window.set_reset_button_active(True)
         self.update()
 
     # function to draw an agent at a given position; returns address of the drawn rectangle
@@ -107,12 +86,13 @@ class CustomCanvas(Canvas):
                             , y_pos=np.random.randint(self.MARGIN*self.HEIGHT, self.HEIGHT-self.figsize[1]*self.dpi-70)))
 
     # called once in __init__ to draw a nice figure and graph in it
-    def init_graph(self):
+    def init_charts(self):
+        # plot
         self.graph_progress_data=[]
         self.graph_x_data=[]
         figure = Figure(figsize=self.figsize, dpi=self.dpi, facecolor=self.BG_COLOR)
-        self.plot = figure.add_subplot(111, facecolor=self.BG_COLOR)
-        self.line_progress, = self.plot.plot(self.graph_x_data, self.graph_progress_data, color=self.PRIMARY_COLOR, label="Progress")
+        self.plot = figure.add_subplot(121, facecolor=self.BG_COLOR)
+        self.plot_obj, = self.plot.plot(self.graph_x_data, self.graph_progress_data, color=self.PRIMARY_COLOR, label="Progress")
         self.plot.set_ylim(bottom=0)
         self.plot.set_xlim(left=0)
         self.plot.set_xlabel("Day")
@@ -123,38 +103,60 @@ class CustomCanvas(Canvas):
         self.plot.yaxis.label.set_fontsize(16)
         self.plot.xaxis.label.set_color(self.PRIMARY_COLOR)
         self.plot.xaxis.label.set_fontsize(16)
+        self.plot.set_autoscalex_on(True)
+        self.plot.set_autoscaley_on(True)
         self.plot.legend()
-        
-        self.graph = FigureCanvasTkAgg(figure, master=self)
-        self.graph.draw()
-        plot_widget = self.graph.get_tk_widget()
+
+        # histograms
+        self.creativity_distribution_data = [agent.creativity for agent in self.society.agents]
+        self.openness_distribution_data = [agent.openness for agent in self.society.agents]
+        self.histogram = figure.add_subplot(122, facecolor=self.BG_COLOR)
+        self.num_of_bins=int(np.sqrt(self.society.num_of_agents))
+        hist_crea_data, hist_crea_bins = np.histogram(self.creativity_distribution_data, bins=self.num_of_bins, range=(0,1))
+        hist_open_data, hist_open_bins = np.histogram(self.openness_distribution_data, bins=self.num_of_bins, range=(0,1))
+        self.hist_obj_crea = self.histogram.hist(hist_crea_data, bins=hist_crea_bins, color='red', alpha=0.5, label='creativity')
+        self.hist_obj_open = self.histogram.hist(hist_open_data, bins=hist_open_bins, color='blue', alpha=0.5, label='openness')
+        self.histogram.set_xlim([0,1])
+        self.histogram.set_ylim([0,0.8*self.society.num_of_agents])
+        self.histogram.set_xlabel("Creativity/Openness")
+        self.histogram.set_ylabel("Frequency")
+        self.histogram.yaxis.label.set_color(self.PRIMARY_COLOR)
+        self.histogram.yaxis.label.set_fontsize(16)
+        self.histogram.legend()    
+
+        self.charts = FigureCanvasTkAgg(figure, master=self)
+        self.charts.draw()
+        plot_widget = self.charts.get_tk_widget()
         plot_widget.place(x=0.05*self.WIDTH, y=self.HEIGHT-self.dpi*self.figsize[1]-40)
 
 
     # called everytime we want to draw current state on graph 
-    def update_graph(self):
+    def update_charts(self):
         self.graph_x_data.append(self.society.day)
-
         self.graph_progress_data.append(self.society.progress)
-        self.line_progress.set_data(self.graph_x_data, self.graph_progress_data)
-    
-        # for line in self.plot.get_lines(): # ax.lines:
-        #     line.remove()
-        self.line_progress, = self.plot.plot(self.graph_x_data, self.graph_progress_data, color=self.PRIMARY_COLOR, label="Progress")
-        # self.line_crea, = self.plot.plot(self.graph_x_data, self.graph_crea_data, color=self.AGENT_COLOR, label="Creative")
-        # self.line_cons, = self.plot.plot(self.graph_x_data, self.graph_cons_data, color="green", label="Conservative")
-        self.plot.set_xticks(self.graph_x_data)
-        self.plot.set_yticks(self.graph_progress_data)
+        self.plot_obj.set_data(self.graph_x_data, self.graph_progress_data)
+        # self.plot.set_xticks([x for i, x in enumerate(self.graph_x_data) if x%4==0])
+        # self.plot.set_yticks([x for i, x in enumerate(self.graph_x_data) if x%4==0])
+        self.plot.set_xbound(0, self.society.day)
+        self.plot.set_ybound(0, self.society.progress)
 
-        self.graph.draw()
+
+        self.creativity_distribution_data = [agent.creativity for agent in self.society.agents]
+        self.openness_distribution_data = [agent.openness for agent in self.society.agents]
+        for i, rect in enumerate(self.hist_obj_crea[2]):
+            rect.set_height(np.histogram(self.creativity_distribution_data, bins=self.num_of_bins, range=(0,1))[0][i])
+        for i, rect in enumerate(self.hist_obj_open[2]):
+            rect.set_height(np.histogram(self.openness_distribution_data, bins=self.num_of_bins, range=(0,1))[0][i])
+
+        self.charts.draw()
 
     # clear all lines on graph
-    def reset_graph(self):
-        self.graph_x_data=[]
-        self.graph_progress_data=[]
-        for line in self.plot.get_lines():
-            line.remove()
-        self.graph.draw()
+    def reset_charts(self):
+        del self.graph_x_data[:]
+        del self.graph_progress_data[:]
+        self.plot.set_xbound(0,1)
+        self.plot.set_ybound(0,1)
+        self.charts.draw()
 
     # it is called to prepare canvas to display society of new parameters
     def init_new(self):
@@ -162,8 +164,23 @@ class CustomCanvas(Canvas):
         self.delete("all")
 
         self.draw_new_agents()
-        self.reset_graph()
+        self.reset_charts()
         self.draw_society()
+
+    # make the canvas being updated
+    def start_update(self):
+        self.thread_running_event.set()
+	
+	# stop the canvas from updating
+    def stop_update(self):
+        self.thread_running_event.clear()
+
+    # for continous evolution of society
+    def animate_society(self):
+        while self.thread_running_event.is_set():
+            self.society.next_step()          
+            self.draw_society()
+            time.sleep(0.05)
 
     def get_agent_colors(self, agent:Agent) -> tuple:
         red_color = '#' + format(int((1-agent.creativity)*255), '02x') + "0000"

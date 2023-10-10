@@ -99,26 +99,26 @@ class Window():
 	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
         self.creativity_force_slider_value_label.grid(column=3, row=1, pady=(10, 5))
 
-    #     # field force slider
-    #     self.force_slider_label=ttk.Label(master=params_frame, text="Field force", font=('Arial', 14)
-	#    , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-    #     self.force_slider_label.grid(column=2, row=2, columnspan=2, pady=(30, 15))
-    #     force_density_var = IntVar(value=self.society.field_force)
+        # openness force slider
+        self.openness_force_slider_label=ttk.Label(master=params_frame, text="Openness force", font=('Arial', 14)
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.openness_force_slider_label.grid(column=2, row=2, columnspan=2, pady=(10, 15))
+        openness_force_density_var = DoubleVar(value=self.society.openness_force)
 
-    #     def force_slider_event(value):
-    #         self.force_slider_value_label.configure(text=int(value))
-    #         if value != self.society.field_force:
-    #             self.society.field_force=value
-    #             self.society.new_society()
-    #             self.reset_canvas()
+        def openness_force_slider_event(value):
+            self.openness_force_slider_value_label.configure(text=f'{value:.2f}')
+            if value != self.society.openness_force:
+                self.society.openness_force=value
+                self.society.new_society()
+                self.reset_canvas()
 
-    #     self.force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
-    #                                , hover=False, button_color=self.PRIMARY_COLOR
-	# 		                        , from_=1, to=4, variable=force_density_var, number_of_steps=3, command=force_slider_event)
-    #     self.force_slider.grid(column=2, row=3, padx=(20,0))
-    #     self.force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(force_density_var.get())
-	#    , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
-    #     self.force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
+        self.openness_force_slider = CTkSlider(master=params_frame, fg_color='grey', progress_color=self.PRIMARY_COLOR
+                                   , hover=False, button_color=self.PRIMARY_COLOR
+			                        , from_=0, to=0.5, number_of_steps=10, variable=openness_force_density_var, command=openness_force_slider_event )
+        self.openness_force_slider.grid(column=2, row=3, padx=(20,0))
+        self.openness_force_slider_value_label = ttk.Label(master=params_frame, font=('Arial', 12), text=int(openness_force_density_var.get())
+	   , foreground=self.PRIMARY_COLOR, background=self.BG_COLOR)
+        self.openness_force_slider_value_label.grid(column=3, row=3, pady=(10, 5))
 
 
 # BUTTON FRAME
@@ -221,9 +221,9 @@ class Window():
             self.creativity_force_slider_label.configure(foreground=self.PRIMARY_COLOR)
             self.creativity_force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
 
-            # self.force_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
-            # self.force_slider_label.configure(foreground=self.PRIMARY_COLOR)
-            # self.force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
+            self.openness_force_slider.configure(state=NORMAL, progress_color=self.PRIMARY_COLOR, button_color=self.PRIMARY_COLOR)
+            self.openness_force_slider_label.configure(foreground=self.PRIMARY_COLOR)
+            self.openness_force_slider_value_label.configure(foreground=self.PRIMARY_COLOR)
             
         else:
             self.creativity_mean_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
@@ -238,7 +238,7 @@ class Window():
             self.creativity_force_slider_label.configure(foreground=self.DISABLED_COLOR)
             self.creativity_force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 
-            # self.force_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
-            # self.force_slider_label.configure(foreground=self.DISABLED_COLOR)
-            # self.force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
+            self.openness_force_slider.configure(state=DISABLED, progress_color=self.DISABLED_COLOR, button_color=self.DISABLED_COLOR)
+            self.openness_force_slider_label.configure(foreground=self.DISABLED_COLOR)
+            self.openness_force_slider_value_label.configure(foreground=self.DISABLED_COLOR)
 

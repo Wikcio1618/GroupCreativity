@@ -1,4 +1,4 @@
-from math import floor, sqrt
+from math import floor, sqrt, exp
 from numpy import array
 from random import randint, choice
 
@@ -11,13 +11,16 @@ class Society:
     # progress
 	# num_of_tasks how much tasks can one agent do
 
-	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=10, num_of_voters=3, num_of_tasks=5, creativity_force=0):
+	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=100
+			  , num_of_voters=1, num_of_tasks=3, creativity_force=0, openness_force=0, temperature=0):
 		self.num_of_agents=num_of_agents
 		self.creativity_mean = creativity_mean
 		self.openness_mean = openness_mean
 		self.num_of_voters = num_of_voters
 		self.num_of_tasks = num_of_tasks
 		self.creativity_force = creativity_force
+		self.openness_force = openness_force
+		self.temperature = temperature
 		self.new_society()
 
 	def new_society(self):
@@ -48,17 +51,21 @@ class Society:
 			# idea accepted
 			self.progress += idea_giver.creativity
 			for voter in voters:
-				voter.add_resource(-1/self.num_of_tasks)
-			idea_giver.add_creativity(self.creativity_force)
+				if self.num_of_tasks !=0:
+					voter.add_resource(-1/self.num_of_tasks)
+				voter.add_openness(-self.openness_force)
+			idea_giver.add_creativity(+self.creativity_force)
 		else:
+			for voter in voters:
+				voter.add_openness(+self.openness_force)
 			idea_giver.add_creativity(-self.creativity_force)
 
 		self.day += 1
 	
 	# runs society and returns number of days
-	def run_until_target(self, max_days = 10**5) -> int:
+	def run_until_target(self, max_days = 10**3, target_progress=5) -> int:
 		self.new_society()
-		while self.progress < self.TARGET_PROGRESS and self.day < max_days:
+		while self.progress < target_progress and self.day < max_days:
 			self.next_step()
 		return self.day
 
@@ -67,3 +74,6 @@ class Society:
 		for _ in range(time):
 			self.next_step()
 		return self.progress
+
+	def sigmoid(x, T):
+		1/(1+exp(-x/T))
