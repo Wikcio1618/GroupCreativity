@@ -12,41 +12,40 @@ class Society:
     # progress
 	# num_of_tasks how much tasks can one agent do
 
-	def __init__(self, creativity_mean=0.5, openness_mean=0.5, num_of_agents=100
+	def __init__(self, crea_dist = None, open_dist = None, num_of_agents=100
 			  , creativity_force=0, openness_force=0, temperature=0):
 		self.num_of_agents=num_of_agents
-		self.creativity_mean = creativity_mean
-		self.openness_mean = openness_mean
+		if crea_dist is None:
+			crea_dist  = np.random.normal(0.5, 0.15, self.num_of_agents)
+		self.crea_dist = crea_dist
+		if open_dist is None:
+			open_dist = np.random.normal(0.5, 0.15, self.num_of_agents)
+		self.open_dist = open_dist
 		self.creativity_force = creativity_force
 		self.openness_force = openness_force
 		self.temperature = temperature
-		self.new_society()
+		self.new_society(self.crea_dist, self.open_dist)
 
-	def new_society(self):
+	def new_society(self, crea_dist, open_dist):
 		self.progress = 0
 		self.day = 0
-        # create creative and conservative agents according to CREATIVE_DENSITY; position them
-		self.agents = array([Agent() for _ in range(self.num_of_agents)])
+		
+		# create agents and assign creativity and openness according to distributions
+		self.agents = array([Agent(creativity=crea_dist[i], openness=open_dist[i]) for i in range(self.num_of_agents)])
 
-		for _ in range(floor(self.creativity_mean * self.num_of_agents * 100)):
-			choice(self.agents).add_creativity(0.01)
-		for _ in range(floor(self.openness_mean * self.num_of_agents * 100)):
-			choice(self.agents).add_openness(0.01)
- 
 	def next_step(self):
 		# find idea_giver and neighbour
 		considered_agents = set([])
 		idea_giver = choice(self.agents)
 		considered_agents.add(idea_giver)
 		while len(considered_agents) < 2:
-			print('test')
 			voter = choice(self.agents)
 			considered_agents.add(voter)
 
 		vote_accepted=(np.random.uniform() < self.sigmoid(voter.openness - idea_giver.creativity, self.temperature))
 		if vote_accepted:
 			# idea accepted
-			self.progress += idea_giver.creativity
+			self.progress += 1 #TODO temporary
 			voter.add_openness(-self.openness_force)
 			idea_giver.add_creativity(+self.creativity_force)
 		else:
@@ -63,7 +62,7 @@ class Society:
 		return self.day
 
 	def run_until_time(self, time=100) -> int:
-		self.new_society()
+		self.new_society(self.crea_dist, self.open_dist)
 		for _ in range(time):
 			self.next_step()
 		return self.progress

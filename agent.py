@@ -18,17 +18,17 @@ class Agent():
 
 	def add_creativity(self, crea):
 		self.creativity += crea
-		if self.creativity < 0:
-			self.creativity = 0
-		elif self.creativity > 1:
-			self.creativity = 1
+		# if self.creativity < 0:
+		# 	self.creativity = 0
+		# elif self.creativity > 1:
+		# 	self.creativity = 1
 
 	def add_openness(self, op):
 		self.openness += op
-		if self.openness < 0:
-			self.openness = 0
-		elif self.openness > 1:
-			self.openness = 1
+		# if self.openness < 0:
+		# 	self.openness = 0
+		# elif self.openness > 1:
+		# 	self.openness = 1
 			
 	def add_resource(self, res):
 		self.resource += res
