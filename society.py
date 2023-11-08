@@ -9,10 +9,9 @@ class Society:
     # agents - array of agents
     # day - time iterations
 
-	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, creativity_force=0, thresh=None, temperature=0):
+	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=None, temperature=0):
 		self.num_of_agents = num_of_agents
 		self.crea_dist  = np.random.normal(crea_mean, crea_stddev, self.num_of_agents)
-		self.creativity_force = creativity_force
 		if thresh is None:
 			thresh = crea_mean * crea_mean
 		self.thresh = thresh
@@ -35,11 +34,11 @@ class Society:
 
 		vote_accepted=(np.random.uniform() < self.sigmoid(agent_j.creativity * agent_i.creativity - self.thresh, self.temperature))
 		if vote_accepted:
-			agent_i.add_creativity(+self.creativity_force)
-			agent_j.add_creativity(+self.creativity_force)
+			agent_i.add_creativity(+1)
+			agent_j.add_creativity(+1)
 		else:
-			agent_i.add_creativity(-self.creativity_force)
-			agent_j.add_creativity(-self.creativity_force)
+			agent_i.add_creativity(-1)
+			agent_j.add_creativity(-1)
 
 		self.day += 1
 	
