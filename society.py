@@ -1,6 +1,7 @@
-from math import floor, sqrt, exp
+import math
 import numpy as np
 from random import randint, choice
+from numba import jit
 
 from agent import Agent
 
@@ -32,7 +33,7 @@ class Society:
 			agent_j = choice(self.agents)
 			considered_agents.add(agent_j)
 
-		vote_accepted=(np.random.uniform() < self.sigmoid(agent_j.creativity * agent_i.creativity - self.thresh, self.temperature))
+		vote_accepted=(np.random.uniform() < self.sigmoid(math.pow(agent_j.creativity, 3) + math.pow(agent_i.creativity, 3) - self.thresh, self.temperature))
 		if vote_accepted:
 			agent_i.add_creativity(+1)
 			agent_j.add_creativity(+1)
@@ -56,5 +57,5 @@ class Society:
 	@staticmethod
 	def sigmoid(x, T):
 		if T==0:
-			return np.heaviside(x, 0.5)
-		return 1/(1+exp(-x/T))
+			return np.heaviside(x, 0)
+		return 1/(1+np.exp(-x/T))
