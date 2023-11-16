@@ -1,6 +1,7 @@
 import math
 import numpy as np
-from random import randint, choice
+from random import choice
+import itertools
 from numba import jit
 
 from agent import Agent
@@ -9,12 +10,12 @@ class Society:
     # FIELDS:
     # agents - array of agents
     # day - time iterations
+	# temperature
+	# thresh
 
-	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=None, temperature=0):
+	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=0, temperature=0):
 		self.num_of_agents = num_of_agents
 		self.crea_dist  = np.random.normal(crea_mean, crea_stddev, self.num_of_agents)
-		if thresh is None:
-			thresh = crea_mean * crea_mean
 		self.thresh = thresh
 		self.temperature = temperature
 		self.new_society(self.crea_dist)
@@ -54,8 +55,23 @@ class Society:
 	def get_crea_stddev(self):
 		return np.std([x.creativity for x in self.agents])
 
+	def society_success_chance(self):
+		pairs_idxs = list(itertools.combinations(range(self.num_of_agents), 2))
+		chance = 0
+		for pair in pairs_idxs:
+			chance += self.pair_chance(self.agents[pair[0]].creativity, self.agents[pair[1]].creativity)
+		chance /= len(pairs_idxs)
+		return chance
+
+	# assumed that possibility of drawing himself is low
+	def agent_success_chance(self, c_i):
+		return np.average([self.pair_chance(c_i, agent.creativity) for agent in self.agents])
+
+	def pair_chance(self, c_i, c_j):
+		return Society.sigmoid(np.power(c_i, 3) + np.power(c_j, 3) - self.thresh, self.temperature)
+
 	@staticmethod
 	def sigmoid(x, T):
 		if T==0:
-			return np.heaviside(x, 0)
+			return np.heaviside(x, 0.5)
 		return 1/(1+np.exp(-x/T))
