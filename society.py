@@ -2,7 +2,8 @@ import math
 import numpy as np
 from random import choice
 import itertools
-from numba import jit
+from matplotlib import cm
+from matplotlib.colors import Normalize
 
 from agent import Agent
 
@@ -34,7 +35,8 @@ class Society:
 			agent_j = choice(self.agents)
 			considered_agents.add(agent_j)
 
-		vote_accepted=(np.random.uniform() < self.sigmoid(math.pow(agent_j.creativity, 3) + math.pow(agent_i.creativity, 3) - self.thresh, self.temperature))
+		vote_accepted=(np.random.uniform() < self.pair_chance(agent_i.creativity, agent_j.creativity))
+
 		if vote_accepted:
 			agent_i.add_creativity(+1)
 			agent_j.add_creativity(+1)
@@ -68,10 +70,21 @@ class Society:
 		return np.average([self.pair_chance(c_i, agent.creativity) for agent in self.agents])
 
 	def pair_chance(self, c_i, c_j):
-		return Society.sigmoid(np.power(c_i, 3) + np.power(c_j, 3) - self.thresh, self.temperature)
+		return Society.sigmoid(c_i**3 + c_j**3 - self.thresh, self.temperature)
 
 	@staticmethod
 	def sigmoid(x, T):
 		if T==0:
 			return np.heaviside(x, 0.5)
 		return 1/(1+np.exp(-x/T))
+	
+	@staticmethod
+	def get_coolwarm_color(parameter):
+		# Ensure parameter is in the range [-1, 1]
+		parameter = max(-1, min(1, parameter))
+		# Create a ScalarMappable
+		norm = Normalize(vmin=-1, vmax=1)
+		scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.coolwarm)
+		# Map parameter to RGBA color
+		color = scalar_map.to_rgba(parameter)
+		return color
