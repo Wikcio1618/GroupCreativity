@@ -71,6 +71,11 @@ class Society:
 
 	def pair_chance(self, c_i, c_j):
 		return Society.sigmoid(c_i**3 + c_j**3 - self.thresh, self.temperature)
+	
+	# how will num of agents in the bin change
+	def crea_density_slope(self, bin_low, bin_high, this_density, prev_density=0, next_density=0):
+		return (-this_density + next_density*(1 - self.agent_success_chance((bin_low + 1 + bin_high + 1)/2))
+				+ prev_density*self.agent_success_chance((bin_low - 1 + bin_high - 1)/2))
 
 	@staticmethod
 	def sigmoid(x, T):
