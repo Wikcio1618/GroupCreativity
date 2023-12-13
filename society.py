@@ -16,7 +16,7 @@ class Society:
 
 	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=0, temperature=0):
 		self.num_of_agents = num_of_agents
-		self.crea_dist  = np.random.normal(crea_mean, crea_stddev, self.num_of_agents)
+		self.crea_dist  = np.round(np.random.normal(crea_mean, crea_stddev, self.num_of_agents))
 		self.thresh = thresh
 		self.temperature = temperature
 		self.new_society(self.crea_dist)
@@ -47,8 +47,7 @@ class Society:
 		self.day += 1
 	
 	def run_until_time(self, time):
-		self.new_society(self.crea_dist)
-		for _ in range(time):
+		while self.day < time:
 			self.next_step()
 
 	def get_crea_mean(self):
@@ -70,17 +69,42 @@ class Society:
 		return np.average([self.pair_chance(c_i, agent.creativity) for agent in self.agents])
 
 	def pair_chance(self, c_i, c_j):
-		return Society.sigmoid(c_i**3 + c_j**3 - self.thresh, self.temperature)
+		return Society.sigmoid(c_i**1 + c_j**1 - self.thresh, self.temperature)
 	
 	# how will num of agents in the bin change
-	def crea_density_slope(self, bin_low, bin_high, this_density, prev_density=0, next_density=0):
-		return (-this_density + next_density*(1 - self.agent_success_chance((bin_low + 1 + bin_high + 1)/2))
-				+ prev_density*self.agent_success_chance((bin_low - 1 + bin_high - 1)/2))
+	def society_density_slope(self):
+		creas = np.array([agent.creativity for agent in self.agents])
+		min, max = np.min(creas), np.max(creas)
 
+		slopes = np.zeros(int(max-min+1))
+		
+		p_curr = (creas == min).sum() / len(creas)
+		gamma_curr = self.agent_success_chance(min)
+		p_next = (creas == min+1).sum() / len(creas)
+		gamma_next = self.agent_success_chance(min+1)
+		slopes[0] = -p_curr + p_next*(1 - gamma_next)
+		for i in range(1, int(max  - min + 1)):
+			p_prev = p_curr
+			gamma_prev = gamma_curr
+			p_curr = p_next
+			gamma_curr = gamma_next
+			slopes[i] = -p_curr + p_prev * gamma_prev
+
+			gamma_next = self.agent_success_chance(min + i + 1)
+			p_next = (creas == min + i + 1).sum() / len(creas)
+			slopes[i] += p_next * (1 - gamma_next)
+
+		return slopes 
+	
+	def get_entropy(self):
+		_ , counts = np.unique([agent.creativity for agent in self.agents], return_counts=True)
+		dens = np.divide(counts, self.num_of_agents)
+		return -sum([d * math.log(d, self.num_of_agents) for d in dens])
+	
 	@staticmethod
 	def sigmoid(x, T):
 		if T==0:
-			return np.heaviside(x, 0.5)
+			return np.heaviside(x, 0)
 		return 1/(1+np.exp(-x/T))
 	
 	@staticmethod
