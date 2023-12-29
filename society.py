@@ -14,11 +14,12 @@ class Society:
 	# temperature
 	# thresh
 
-	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=0, temperature=0):
+	def __init__(self, crea_mean=10, crea_stddev=0.2, num_of_agents=100, thresh=0, temperature=0, interaction = 'x3'):
 		self.num_of_agents = num_of_agents
 		self.crea_dist  = np.round(np.random.normal(crea_mean, crea_stddev, self.num_of_agents))
 		self.thresh = thresh
 		self.temperature = temperature
+		self.interaction = interaction
 		self.new_society(self.crea_dist)
 
 	def new_society(self, crea_dist):
@@ -57,11 +58,21 @@ class Society:
 		return np.std([x.creativity for x in self.agents])
 
 	def society_success_chance(self):
-		pairs_idxs = list(itertools.combinations(range(self.num_of_agents), 2))
 		chance = 0
-		for pair in pairs_idxs:
-			chance += self.pair_chance(self.agents[pair[0]].creativity, self.agents[pair[1]].creativity)
-		chance /= len(pairs_idxs)
+		for i in range(self.num_of_agents):
+			for j in range(i):
+				chance += self.pair_chance(self.agents[i].creativity, self.agents[j].creativity)
+		chance /= (self.num_of_agents * (self.num_of_agents - 1) / 2)
+		return chance
+	
+	def get_weighed_society_success_chance(self):
+		chance = 0
+		for i in range(self.num_of_agents):
+			for j in range(i):
+				c_i = self.agents[i].creativity
+				c_j = self.agents[j].creativity
+				chance += (c_i+c_j) / 2 * self.pair_chance(c_i, c_j)
+		chance /= (self.num_of_agents * (self.num_of_agents - 1) / 2)
 		return chance
 
 	# assumed that possibility of drawing himself is low
@@ -69,7 +80,10 @@ class Society:
 		return np.average([self.pair_chance(c_i, agent.creativity) for agent in self.agents])
 
 	def pair_chance(self, c_i, c_j):
-		return Society.sigmoid(c_i**1 + c_j**1 - self.thresh, self.temperature)
+		if self.interaction == 'xy':
+			return Society.sigmoid(c_i * c_j - self.thresh, self.temperature)
+
+		return Society.sigmoid(c_i*c_i*c_i + c_j*c_j*c_j - self.thresh, self.temperature)
 	
 	# how will num of agents in the bin change
 	def society_density_slope(self):
@@ -99,12 +113,63 @@ class Society:
 	def get_entropy(self):
 		_ , counts = np.unique([agent.creativity for agent in self.agents], return_counts=True)
 		dens = np.divide(counts, self.num_of_agents)
-		return -sum([d * math.log(d, self.num_of_agents) for d in dens])
+		return -sum(dens*np.log(dens))
 	
+	def get_entropy_production(self):
+		eps = 1e-5
+		creas = np.array([agent.creativity for agent in self.agents])
+		min, max = int(np.min(creas)), int(np.max(creas))
+		
+		production = 0
+		prev_gamma = self.agent_success_chance(min)
+		p_i = (creas == min).sum() / len(creas)
+		for i in range(min, max):
+			j = i + 1
+			p_j = (creas == j).sum() / len(creas)
+			PW_ji = p_i * (prev_gamma) + eps
+
+			prev_gamma = self.agent_success_chance(j)
+			PW_ij = p_j * (1 - prev_gamma) + eps
+			
+			p_i = p_j
+
+			production += (PW_ij - PW_ji) * math.log(PW_ij / PW_ji)
+
+		return production
+
+	def get_gamma_temp_slope(self, n:int):
+		values, counts = np.unique([agent.creativity for agent in self.agents], return_counts=True)
+		dens = np.divide(counts, self.num_of_agents)
+		return sum([dens[idx] * np.exp((i**3 + n**3 - self.thresh) / self.temperature) / (1 + np.exp((i**3 + n**3 - self.thresh) / self.temperature))**2
+			   * (i**3 + n**3 - self.thresh) / self.temperature / self.temperature for idx, i in enumerate(values)])
+
+	def get_entropy_production_slope(self):
+		creas = np.array([agent.creativity for agent in self.agents])
+		min, max = int(np.min(creas)), int(np.max(creas))
+		calculated_gammas = np.zeros(max - min)
+		slope = 0
+		for i in range(max-min+1):
+			elem = 0
+			# p_prev = (creas == min+i-1).sum() / len(creas)
+			p_curr = (creas == min+i).sum() / len(creas)
+			p_next = (creas == min+i+1).sum() / len(creas)
+			if i != 0:
+				elem += calculated_gammas[i-1]
+			if p_next != 0:
+				calculated_gammas[i] = p_next * self.get_gamma_temp_slope(min+i+1)
+				elem += -calculated_gammas[i]
+			if p_curr != 0:
+				slope += elem * (math.log(p_curr) + 1)
+
+		return slope
+
 	@staticmethod
 	def sigmoid(x, T):
-		if T==0:
-			return np.heaviside(x, 0)
+		if T == 0:
+			return np.heaviside(x, 1/2)
+		if T == 'infty':
+			return 1/2
+		
 		return 1/(1+np.exp(-x/T))
 	
 	@staticmethod
